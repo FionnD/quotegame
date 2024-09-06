@@ -6,39 +6,68 @@
     <title>Quote Guessing Game</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Georgia', serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color: #f0f4f8;
+            color: #2c3e50;
         }
         .container {
             text-align: center;
             background-color: white;
             padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            max-width: 600px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 800px;
             width: 90%;
         }
-        #quote, #error {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
+        h1 {
+            color: #3498db;
+            margin-bottom: 1.5rem;
+            font-size: 2.5rem;
+        }
+        #quote {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            line-height: 1.4;
+            font-style: italic;
+            color: #34495e;
+            padding: 1rem;
+            border-left: 5px solid #3498db;
+            background-color: #ecf0f1;
+            text-align: left;
         }
         #error {
-            color: red;
+            color: #e74c3c;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
         }
         button {
-            margin: 0.5rem;
-            padding: 0.5rem 1rem;
+            padding: 0.8rem 1.5rem;
             font-size: 1rem;
             cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
         }
         #result {
             margin-top: 1rem;
             font-weight: bold;
+            font-size: 1.2rem;
         }
     </style>
 </head>
@@ -47,7 +76,7 @@
         <h1>Guess the Quote Source</h1>
         <div id="quote"></div>
         <div id="error"></div>
-        <div>
+        <div class="button-container">
             <button onclick="guess('Trad wife')">Trad wife</button>
             <button onclick="guess('Pilgrim')">Pilgrim</button>
             <button onclick="guess('Republican')">Republican</button>
@@ -94,9 +123,7 @@
             try {
                 const response = await fetch('quotes.csv');
                 const text = await response.text();
-                console.log("CSV content:", text); // Debug: Log CSV content
                 const rows = parseCSV(text).filter(row => row.length > 1);
-                console.log("Parsed rows:", rows); // Debug: Log parsed rows
 
                 if (rows.length === 0) {
                     throw new Error("CSV file is empty or improperly formatted");
@@ -118,7 +145,6 @@
                     throw new Error("No valid quotes found in the CSV file");
                 }
 
-                console.log("Parsed quotes:", quotes); // Debug: Log parsed quotes
                 nextQuote();
             } catch (error) {
                 console.error('Error loading quotes:', error);
@@ -133,7 +159,7 @@
             }
             const index = Math.floor(Math.random() * quotes.length);
             currentQuote = quotes[index];
-            document.getElementById('quote').textContent = currentQuote.quote;
+            document.getElementById('quote').textContent = `"${currentQuote.quote}"`;
             document.getElementById('result').textContent = '';
             quotes.splice(index, 1);
         }
@@ -143,10 +169,10 @@
             const resultElement = document.getElementById('result');
             if (source === currentQuote.source) {
                 resultElement.textContent = "Correct!";
-                resultElement.style.color = "green";
+                resultElement.style.color = "#27ae60";
             } else {
                 resultElement.textContent = `Wrong! It was a ${currentQuote.source} quote.`;
-                resultElement.style.color = "red";
+                resultElement.style.color = "#c0392b";
             }
             setTimeout(nextQuote, 2000);
         }
