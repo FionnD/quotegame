@@ -5,83 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quote Guessing Game</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
-        
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f4f8;
-            color: #333;
+            background-color: #f0f0f0;
         }
         .container {
             text-align: center;
             background-color: white;
             padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
             max-width: 600px;
             width: 90%;
         }
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 1.5rem;
+        #quote, #error {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
         }
-        #quote {
-            font-size: 1.4rem;
-            margin-bottom: 2rem;
-            line-height: 1.6;
-            font-weight: 300;
-            font-style: italic;
-            color: #34495e;
-        }
-        .button-container {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 1rem;
+        #error {
+            color: red;
         }
         button {
-            padding: 0.8rem 1.5rem;
+            margin: 0.5rem;
+            padding: 0.5rem 1rem;
             font-size: 1rem;
             cursor: pointer;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        button:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         #result {
-            margin-top: 2rem;
+            margin-top: 1rem;
             font-weight: bold;
-            font-size: 1.2rem;
-            min-height: 1.5em;
-        }
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Guess the Quote Source</h1>
-        <div id="quote" class="fade-in"></div>
-        <div class="button-container">
+        <div id="quote"></div>
+        <div id="error"></div>
+        <div>
             <button onclick="guess('Trad wife')">Trad wife</button>
             <button onclick="guess('Pilgrim')">Pilgrim</button>
             <button onclick="guess('Republican')">Republican</button>
@@ -97,15 +63,35 @@
             try {
                 const response = await fetch('quotes.csv');
                 const text = await response.text();
-                const rows = text.split('\n').slice(1);  // Assume first row is header
-                quotes = rows.map(row => {
-                    const [quote, source] = row.split(',');
-                    return { quote: quote.trim(), source: source.trim() };
+                console.log("CSV content:", text); // Debug: Log CSV content
+                const rows = text.split('\n').filter(row => row.trim() !== '');
+                console.log("Rows:", rows); // Debug: Log parsed rows
+
+                if (rows.length === 0) {
+                    throw new Error("CSV file is empty");
+                }
+
+                // Check if the first row is a header
+                const headerRow = rows[0].toLowerCase();
+                const startIndex = headerRow.includes('quote') && headerRow.includes('source') ? 1 : 0;
+
+                quotes = rows.slice(startIndex).map((row, index) => {
+                    const [quote, source] = row.split(',').map(item => item.trim());
+                    if (!quote || !source) {
+                        throw new Error(`Invalid row format at line ${index + startIndex + 1}: ${row}`);
+                    }
+                    return { quote, source };
                 });
+
+                if (quotes.length === 0) {
+                    throw new Error("No valid quotes found in the CSV file");
+                }
+
+                console.log("Parsed quotes:", quotes); // Debug: Log parsed quotes
                 nextQuote();
             } catch (error) {
                 console.error('Error loading quotes:', error);
-                document.getElementById('quote').textContent = "Error loading quotes. Please check your CSV file.";
+                document.getElementById('error').textContent = `Error: ${error.message}. Please check your CSV file and console for more details.`;
             }
         }
 
@@ -116,11 +102,7 @@
             }
             const index = Math.floor(Math.random() * quotes.length);
             currentQuote = quotes[index];
-            const quoteElement = document.getElementById('quote');
-            quoteElement.textContent = `"${currentQuote.quote}"`;
-            quoteElement.classList.remove('fade-in');
-            void quoteElement.offsetWidth; // Trigger reflow
-            quoteElement.classList.add('fade-in');
+            document.getElementById('quote').textContent = currentQuote.quote;
             document.getElementById('result').textContent = '';
             quotes.splice(index, 1);
         }
@@ -130,14 +112,11 @@
             const resultElement = document.getElementById('result');
             if (source === currentQuote.source) {
                 resultElement.textContent = "Correct!";
-                resultElement.style.color = "#27ae60";
+                resultElement.style.color = "green";
             } else {
                 resultElement.textContent = `Wrong! It was a ${currentQuote.source} quote.`;
-                resultElement.style.color = "#c0392b";
+                resultElement.style.color = "red";
             }
-            resultElement.classList.remove('fade-in');
-            void resultElement.offsetWidth; // Trigger reflow
-            resultElement.classList.add('fade-in');
             setTimeout(nextQuote, 2000);
         }
 
