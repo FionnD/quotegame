@@ -5,43 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quote Guessing Game</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color: #f0f4f8;
+            color: #333;
         }
         .container {
             text-align: center;
             background-color: white;
             padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 90%;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
         }
         #quote {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
+            font-size: 1.4rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            font-weight: 300;
+            font-style: italic;
+            color: #34495e;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
         button {
-            margin: 0.5rem;
-            padding: 0.5rem 1rem;
+            padding: 0.8rem 1.5rem;
             font-size: 1rem;
             cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         #result {
-            margin-top: 1rem;
+            margin-top: 2rem;
             font-weight: bold;
+            font-size: 1.2rem;
+            min-height: 1.5em;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Guess the Quote Source</h1>
-        <div id="quote"></div>
-        <div>
+        <div id="quote" class="fade-in"></div>
+        <div class="button-container">
             <button onclick="guess('Trad wife')">Trad wife</button>
             <button onclick="guess('Pilgrim')">Pilgrim</button>
             <button onclick="guess('Republican')">Republican</button>
@@ -76,7 +116,11 @@
             }
             const index = Math.floor(Math.random() * quotes.length);
             currentQuote = quotes[index];
-            document.getElementById('quote').textContent = currentQuote.quote;
+            const quoteElement = document.getElementById('quote');
+            quoteElement.textContent = `"${currentQuote.quote}"`;
+            quoteElement.classList.remove('fade-in');
+            void quoteElement.offsetWidth; // Trigger reflow
+            quoteElement.classList.add('fade-in');
             document.getElementById('result').textContent = '';
             quotes.splice(index, 1);
         }
@@ -86,11 +130,14 @@
             const resultElement = document.getElementById('result');
             if (source === currentQuote.source) {
                 resultElement.textContent = "Correct!";
-                resultElement.style.color = "green";
+                resultElement.style.color = "#27ae60";
             } else {
                 resultElement.textContent = `Wrong! It was a ${currentQuote.source} quote.`;
-                resultElement.style.color = "red";
+                resultElement.style.color = "#c0392b";
             }
+            resultElement.classList.remove('fade-in');
+            void resultElement.offsetWidth; // Trigger reflow
+            resultElement.classList.add('fade-in');
             setTimeout(nextQuote, 2000);
         }
 
