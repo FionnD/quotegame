@@ -59,26 +59,57 @@
         let quotes = [];
         let currentQuote;
 
+        function parseCSV(text) {
+            const rows = text.split('\n');
+            return rows.map(row => {
+                const entries = row.split(',');
+                const parsedEntries = [];
+                let entry = '';
+                let insideQuotes = false;
+                
+                for (let i = 0; i < entries.length; i++) {
+                    if (insideQuotes) {
+                        entry += ',' + entries[i];
+                        if (entries[i].endsWith('"')) {
+                            parsedEntries.push(entry.slice(1, -1));  // Remove surrounding quotes
+                            entry = '';
+                            insideQuotes = false;
+                        }
+                    } else {
+                        if (entries[i].startsWith('"')) {
+                            insideQuotes = true;
+                            entry = entries[i];
+                        } else {
+                            parsedEntries.push(entries[i]);
+                        }
+                    }
+                }
+                
+                if (entry) parsedEntries.push(entry);
+                return parsedEntries;
+            });
+        }
+
         async function loadQuotes() {
             try {
                 const response = await fetch('quotes.csv');
                 const text = await response.text();
                 console.log("CSV content:", text); // Debug: Log CSV content
-                const rows = text.split('\n').filter(row => row.trim() !== '');
-                console.log("Rows:", rows); // Debug: Log parsed rows
+                const rows = parseCSV(text).filter(row => row.length > 1);
+                console.log("Parsed rows:", rows); // Debug: Log parsed rows
 
                 if (rows.length === 0) {
-                    throw new Error("CSV file is empty");
+                    throw new Error("CSV file is empty or improperly formatted");
                 }
 
                 // Check if the first row is a header
-                const headerRow = rows[0].toLowerCase();
+                const headerRow = rows[0].map(cell => cell.toLowerCase());
                 const startIndex = headerRow.includes('quote') && headerRow.includes('source') ? 1 : 0;
 
                 quotes = rows.slice(startIndex).map((row, index) => {
-                    const [quote, source] = row.split(',').map(item => item.trim());
+                    const [quote, source] = [row[0], row[1]].map(item => item.trim());
                     if (!quote || !source) {
-                        throw new Error(`Invalid row format at line ${index + startIndex + 1}: ${row}`);
+                        throw new Error(`Invalid row format at line ${index + startIndex + 1}: ${row.join(',')}`);
                     }
                     return { quote, source };
                 });
